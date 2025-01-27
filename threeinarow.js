@@ -17,6 +17,7 @@ function createPlayingBoard(board) {
     }
 }
 function updateBoardOnWin(board, winningPosition) {
+    console.log(winningPosition);
     if (board === undefined || board === null) {
         throw new Error("Playingboard is null.");
     }
@@ -24,8 +25,6 @@ function updateBoardOnWin(board, winningPosition) {
         throw new Error("Winning position is not an array of 3.");
     }
     const cellElements = board.querySelectorAll(".cell");
-    console.log("Hey")
-    console.log(winningPosition);
     let num = 0;
     winningPosition.forEach(([row, col]) => {
         cellElements.forEach((cell) => {
