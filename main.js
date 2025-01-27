@@ -14,7 +14,7 @@ function receiveMoves(playingBoard, websocket) {
                 // Creates the shareable link to join the game
                 const shareInput = document.getElementById("share-link");
                 const joinKey = event.join_key
-                shareInput.value = window.location.origin + "/3-in-a-row-multiplayer/?join_key=" + joinKey;
+                shareInput.value = window.location.origin + "/?join_key=" + joinKey;
                 break;
             case "PLAY":
                 // In case of PLAY event. Update the UI with the opponents move.
@@ -75,7 +75,8 @@ function getWebSocketServer() {
     if (window.location.host === "nikkcom.github.io") {
         return "wss://three-in-a-row-multiplayer-6c81864b3f27.herokuapp.com/"
     } else  if (window.location.host === "localhost:8000"){
-        return "ws://localhost:8001";
+        //return "ws://localhost:8001";
+        return "wss://three-in-a-row-multiplayer-6c81864b3f27.herokuapp.com/"
     } else {
         throw new Error(`Unsupported host: ${window.location.host}`)
     }
