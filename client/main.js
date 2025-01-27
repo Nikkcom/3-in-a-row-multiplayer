@@ -70,6 +70,16 @@ function initGame(websocket) {
         websocket.send(JSON.stringify(event));
     });
 }
+
+function getWebSocketServer() {
+    if (window.location.host === "nikkcom.github.io") {
+        return "wss://three-in-a-row-multiplayer-6c81864b3f27.herokuapp.com/"
+    } else  if (window.location.host === "localhost:8000"){
+        return "ws://localhost:8001";
+    } else {
+        throw new Error(`Unsupported host: ${window.location.host}`)
+    }
+}
 window.addEventListener("DOMContentLoaded", () => {
 
     // Initialize the playing board.
@@ -77,7 +87,7 @@ window.addEventListener("DOMContentLoaded", () => {
     createPlayingBoard(playingBoard);
 
     // Opens a websocket connection
-    const websocket = new WebSocket("ws://localhost:8001");
+    const websocket = new WebSocket(getWebSocketServer());
 
     // Register event handlers.
     initGame(websocket);
