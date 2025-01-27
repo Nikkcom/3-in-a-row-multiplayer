@@ -1,7 +1,7 @@
 import asyncio
 import json
-import signal
-import os
+import itertools
+from multiprocessing.managers import Array
 from secrets import token_urlsafe
 
 from websockets.asyncio.server import broadcast, serve
@@ -19,6 +19,7 @@ async def error(websocket, message):
         "type": "ERROR",
         "message": message
     }
+    print(f"Sending event: {json.dumps(event)}")
     await websocket.send(json.dumps(event))
 
 async def start(websocket):
@@ -53,14 +54,16 @@ async def play(websocket, game, player, connected):
     """
 
     async for message in websocket:
+        # Logging
+        print(f"Received message in play: {message}")
 
         # Parse a PLAY event from the UI
         event = json.loads(message)
 
         assert(event["type"] == "PLAY")
 
-        column = event["column"]
         row = event["row"]
+        column = event["column"]
 
         try:
 
@@ -71,15 +74,15 @@ async def play(websocket, game, player, connected):
 
             # Send an ERROR event if the move was illegal.
             await error(websocket, str(exc))
-
             continue
 
         event = {
             "type": "PLAY",
             "player": player,
-            "column": column,
             "row": row,
+            "column": column,
         }
+        print(f"broadcasts event: {json.dumps(event)}")
         broadcast(connected, json.dumps(event))
 
         if game.winner is not None:
@@ -87,11 +90,12 @@ async def play(websocket, game, player, connected):
                 "type": "WIN",
                 "player": player,
             }
+            print(f"broadcasts event: {json.dumps(event)}")
             broadcast(connected, json.dumps(event))
 
 async def join(websocket, join_key):
     """
-    Handles the connection for the second player. Joining a already initialized gme.
+    Handles the connection for the second player. Joining an already initialized gme.
     """
 
 
@@ -116,31 +120,64 @@ async def handler(websocket):
     Handles a connection based on who is connecting
     """
 
-    message = websocket.recv()
+    # Initializes a game.
+    game = Threeinarow()
+    print(f"Game initialized")
+    print(f"Game= {len(game.board)}")
 
-    event = json.loads(message)
+    # Players alternate turns in the same browser.
+    turns = itertools.cycle([PLAYER_ONE, PLAYER_TWO])
+    player = next(turns)
 
-    assert event["type"] == "INIT"
+    async for message in websocket:
+        print(f"Received message in handler: {message}")
+        # Parses a PLAY event from the UI
+        event = json.loads(message)
+        assert(event["type"] == "PLAY")
+        row = event["row"]
+        column = event["column"]
 
-    if "join_key" in event:
+        try:
 
-        # Second player is joining a game
-        await join(websocket, event["join_key"])
+            # Tries to play the move.
+            game.play(player, row, column)
+            print(f"game.play success")
+        except ValueError as exc:
+            print(f"Error: {exc}")  # Debugging line
+            # Send an ERROR event if the move was illegal.
+            event = {
+                "type": "ERROR",
+                "message": str(exc),
+            }
+            print(f"Sending event: {json.dumps(event)}")
+            await websocket.send(json.dumps(event))
+            continue
+        # Send a PLAY event to update the UI
+        event = {
+            "type": "PLAY",
+            "player": player,
+            "row": row,
+            "column": column,
+        }
+        print(f"Sending event: {json.dumps(event)}")
+        await websocket.send(json.dumps(event))
 
-    else:
+        if game.winner is not None:
+            event = {
+                "type": "WIN",
+                "player": player,
+                "winning_pos": game.winning_position,
+            }
+            print(f"Sending event: {json.dumps(event)}")
+            await websocket.send(json.dumps(event))
 
-        # First player is starting a game
-        await start(websocket)
+        player = next(turns)
 
 async def main():
 
-    loop = asyncio.get_running_loop()
-    stop = loop.create_future()
-    loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+    async with serve(handler, "", 8001):
 
-    port = int(os.environ.get("PORT", "8001"))
-    async with serve(handler, "", port):
-        await stop
+        await asyncio.get_running_loop().create_future()  # run forever
 
 if __name__ == "__main__":
     asyncio.run(main())
