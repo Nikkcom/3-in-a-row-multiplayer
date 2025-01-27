@@ -5,7 +5,13 @@ PLAYER_TWO = "circle"
 
 class Threeinarow:
     """
-    A Three in a Row game.
+    A class representing a Three in a Row game.
+
+    Attributes:
+        moves: List of moves made in the game.
+        board: 3x3 board to represent the game state.
+        winner: The winner of the game. None if there is no winner yet.
+        winning_position: The winning positions on the board. Empty list if there is no winner yet.
     """
 
     def __init__(self):
@@ -15,18 +21,16 @@ class Threeinarow:
         self.winning_position = None
 
     @property
-    def last_player(self):
+    def last_player(self) -> str:
         """
-        Player who played the last move.
-
+        Player who did the last move.
         """
         return PLAYER_ONE if len(self.moves) % 2 else PLAYER_TWO
 
     @property
-    def last_player_won(self):
+    def last_player_won(self) -> []:
         """
-        If the last move is a winning move.
-        Returns the winning position.
+        Checks if the last move resulted in a win and returns the winning positions if so.
         """
         if self.winning_position is not None:
             return self.winning_position
@@ -46,7 +50,6 @@ class Threeinarow:
                 self.winning_position = [(self.board.index(row), i) for i in range(3)]
                 return self.winning_position
 
-
         # Checks for a winning position diagonally
         if self.board[0][0] == self.board[1][1] == self.board[2][2] != "":
             self.winner = self.board[0][0]
@@ -59,13 +62,17 @@ class Threeinarow:
 
         return []
 
-    def play(self, player, row, col):
+    def play(self, player: str, row: int, col: int) -> None:
         """
-        Play a move at the specified row and column.
+        Plays a move by a player at the specified row and column.
 
-        Returns the current state of the board.
+        Arguments:
+            player (str): The current player making the move.
+            row (int): The row index.
+            col (int): The column index.
 
-        Raises ValueError exception if the move is illegal.
+        Raises:
+            ValueError: If the move is not valid.
         """
 
         if player == self.last_player:
