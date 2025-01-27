@@ -1,8 +1,7 @@
 import asyncio
 import json
-import itertools
+import platform
 import signal
-import os
 from secrets import token_urlsafe
 from websockets.asyncio.server import broadcast, serve
 from threeinarow import PLAYER_ONE, PLAYER_TWO, Threeinarow
@@ -89,9 +88,11 @@ async def play(websocket, game, player, connected):
 
         # If the played move is a winning event, send a WIN event.
         if game.winner is not None:
+
             event = {
                 "type": "WIN",
                 "player": player,
+                "winning_pos": game.winning_position,
             }
             broadcast(connected, json.dumps(event))
 
@@ -132,13 +133,24 @@ async def handler(websocket):
 
 async def main():
 
-    loop = asyncio.get_running_loop()
-    stop = loop.create_future()
-    loop.add_signal_handler(signal.SIGINT, stop.set_result, None)
+    stop = asyncio.Future()
 
-    port = int(os.environ.get("PORT", "8001"))
-    async with serve(handler, "", port):
-        await stop
+        # Check if the platform is Windows
+    if platform.system() != "Windows":
+        # Use signal handlers for Unix-based systems (Heroku)
+        loop = asyncio.get_event_loop()
+        loop.add_signal_handler(signal.SIGINT, stop.set_result, None)
+    else:
+        # Handle KeyboardInterrupt for Windows
+        def handle_interrupt():
+            print("Gracefully shutting down...")
+            stop.set_result(None)
+
+        try:
+            print("Running... Press Ctrl+C to stop.")
+            await stop
+        except KeyboardInterrupt:
+            print("Manually interrupted!")
 
 
 if __name__ == "__main__":
