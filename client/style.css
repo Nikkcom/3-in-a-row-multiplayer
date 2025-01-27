@@ -56,15 +56,17 @@ body {
     height: 60px;
 }
 
-.x svg {
-    fill: red;
+.cell.cross {
+    background-image: url('/client/images/cross.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
 }
-
-.o svg {
-    fill: blue;
+.cell.circle {
+    background-image: url('/client/images/circle.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
 }
-
-.winner {
+.winning{
     background-color: yellow;
 }
 
