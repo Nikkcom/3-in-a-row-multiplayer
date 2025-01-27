@@ -13,8 +13,6 @@ function receiveMoves(playingBoard, websocket) {
             case "INIT":
                 // Creates the shareable link to join the game
                 const shareInput = document.getElementById("share-link");
-                const copyButton = document.getElementById("copy-link");
-                const url = new URL(window.location.href);
                 const joinKey = event.join_key
                 shareInput.value = window.location.origin + "?join_key=" + joinKey;
                 break;
