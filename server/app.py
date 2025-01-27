@@ -8,9 +8,14 @@ from threeinarow import PLAYER_ONE, PLAYER_TWO, Threeinarow
 
 JOIN = {}
 
+
 async def error(websocket, message):
     """
-    Send an error message
+    Sends an error message to the client.
+
+    Arguments:
+        websocket: The connection to the client.
+        message: The error message to send.
     """
     event = {
         "type": "ERROR",
@@ -19,11 +24,12 @@ async def error(websocket, message):
     print(f"Sending event: {json.dumps(event)}")
     await websocket.send(json.dumps(event))
 
-async def start(websocket):
+
+#async def start(websocket):
     """
     Handles the connection from first player. First connection starts a game.
     """
-
+"""
     game = Threeinarow()
 
     connected = {websocket}
@@ -44,18 +50,26 @@ async def start(websocket):
 
     finally:
         del JOIN[join_key]
+"""
 
-async def play(websocket, game, player, connected):
-    """
-    Receive and process moves from a player
-    """
+#async def play(websocket, game, player, connected):
+"""
+Receive and process moves from a player
+
+Arguments:
+    websocket: The connection to the client.
+    game: The game instance.
+    player: The player 
+"""
+
+"""
     async for message in websocket:
         # Logging
         print(f"Received message in play: {message}")
 
         # Parse a PLAY event from the UI
         event = json.loads(message)
-        assert(event["type"] == "PLAY")
+        assert (event["type"] == "PLAY")
         row = event["row"]
         column = event["column"]
 
@@ -83,10 +97,12 @@ async def play(websocket, game, player, connected):
             print(f"broadcasts event: {json.dumps(event)}")
             broadcast(connected, json.dumps(event))
 
-async def join(websocket, join_key):
-    """
-    Handles the connection for the second player. Joining an already initialized gme.
-    """
+"""
+#async def join(websocket, join_key):
+"""
+Handles the connection for the second player. Joining an already initialized gme.
+"""
+"""
     try:
         game, connected = JOIN[join_key]
     except KeyError:
@@ -98,14 +114,14 @@ async def join(websocket, join_key):
         await play(websocket, game, PLAYER_TWO, connected)
     finally:
         connected.remove(websocket)
+
+"""
 async def handler(websocket):
     """
     Handles a connection based on who is connecting
     """
     # Initializes a game.
     game = Threeinarow()
-    print(f"Game initialized")
-    print(f"Game= {len(game.board)}")
     # Players alternate turns in the same browser.
     turns = itertools.cycle([PLAYER_ONE, PLAYER_TWO])
     player = next(turns)
@@ -113,7 +129,7 @@ async def handler(websocket):
         print(f"Received message in handler: {message}")
         # Parses a PLAY event from the UI
         event = json.loads(message)
-        assert(event["type"] == "PLAY")
+        assert (event["type"] == "PLAY")
         row = event["row"]
         column = event["column"]
         try:
@@ -149,10 +165,11 @@ async def handler(websocket):
             await websocket.send(json.dumps(event))
         player = next(turns)
 
-async def main():
 
+async def main():
     async with serve(handler, "", 8001):
         await asyncio.get_running_loop().create_future()  # run forever
+
 
 if __name__ == "__main__":
     asyncio.run(main())
