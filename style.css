@@ -57,12 +57,12 @@ body {
 }
 
 .cell.cross {
-    background-image: url('/client/images/cross.svg');
+    background-image: url('/images/cross.svg');
     background-size: contain;
     background-repeat: no-repeat;
 }
 .cell.circle {
-    background-image: url('/client/images/circle.svg');
+    background-image: url('/images/circle.svg');
     background-size: contain;
     background-repeat: no-repeat;
 }
